@@ -17,6 +17,7 @@ interface HeaderProps {
 
 export default function Header({ session, siteSettings }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [logoError, setLogoError] = useState(false)
 
   // Determine profile link based on session role (no need to fetch /api/me)
   const getProfileLink = () => {
@@ -48,18 +49,13 @@ export default function Header({ session, siteSettings }: HeaderProps) {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
               <Image 
-                src={siteSettings.siteLogo} 
+                src={logoError ? '/globe.svg' : siteSettings.siteLogo} 
                 alt={siteSettings.siteName}
                 width={32}
                 height={32}
                 className="h-8 w-auto"
-                onError={(e) => {
-                  // Fallback to default logo if image fails to load
-                  const target = e.target as HTMLImageElement
-                  if (target.src !== '/globe.svg') {
-                    target.src = '/globe.svg'
-                  }
-                }}
+                onError={() => setLogoError(true)}
+                unoptimized
               />
               <span className="text-xl font-bold text-gray-900">
                 {siteSettings.siteName}
@@ -100,18 +96,13 @@ export default function Header({ session, siteSettings }: HeaderProps) {
             {/* Mobile Logo */}
             <Link href="/" className="flex items-center space-x-2">
               <Image 
-                src={siteSettings.siteLogo} 
+                src={logoError ? '/globe.svg' : siteSettings.siteLogo} 
                 alt={siteSettings.siteName}
                 width={24}
                 height={24}
                 className="h-6 w-auto"
-                onError={(e) => {
-                  // Fallback to default logo if image fails to load
-                  const target = e.target as HTMLImageElement
-                  if (target.src !== '/globe.svg') {
-                    target.src = '/globe.svg'
-                  }
-                }}
+                onError={() => setLogoError(true)}
+                unoptimized
               />
               <span className="text-lg font-bold text-gray-900">
                 {siteSettings.siteName}
