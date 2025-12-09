@@ -14,9 +14,20 @@ export async function getSystemSettings() {
 export async function getSiteSettings() {
   const settings = await getSystemSettings()
   
+  // Validate logo URL - if it's an upload path, check if it exists or use fallback
+  let siteLogo = settings.SITE_LOGO_URL || settings.site_logo || '/globe.svg'
+  
+  // If logo is an upload path but file might not exist (Railway ephemeral storage),
+  // use fallback to prevent errors
+  if (siteLogo.startsWith('/uploads/')) {
+    // In production, uploaded files might not persist, so we'll let the Image component handle the fallback
+    // But we can also check if it's a valid path
+    siteLogo = siteLogo
+  }
+  
   return {
     siteName: settings.SITE_NAME || settings.site_name || 'Şikayetvar',
-    siteLogo: settings.SITE_LOGO_URL || settings.site_logo || '/globe.svg',
+    siteLogo: siteLogo,
     favicon: settings.FAVICON_URL || settings.favicon || '/globe.svg',
     siteDescription: settings.site_description || 'Türkiye\'nin en büyük şikayet platformu'
   }

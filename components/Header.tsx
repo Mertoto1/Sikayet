@@ -53,6 +53,13 @@ export default function Header({ session, siteSettings }: HeaderProps) {
                 width={32}
                 height={32}
                 className="h-8 w-auto"
+                onError={(e) => {
+                  // Fallback to default logo if image fails to load
+                  const target = e.target as HTMLImageElement
+                  if (target.src !== '/globe.svg') {
+                    target.src = '/globe.svg'
+                  }
+                }}
               />
               <span className="text-xl font-bold text-gray-900">
                 {siteSettings.siteName}
@@ -98,6 +105,13 @@ export default function Header({ session, siteSettings }: HeaderProps) {
                 width={24}
                 height={24}
                 className="h-6 w-auto"
+                onError={(e) => {
+                  // Fallback to default logo if image fails to load
+                  const target = e.target as HTMLImageElement
+                  if (target.src !== '/globe.svg') {
+                    target.src = '/globe.svg'
+                  }
+                }}
               />
               <span className="text-lg font-bold text-gray-900">
                 {siteSettings.siteName}

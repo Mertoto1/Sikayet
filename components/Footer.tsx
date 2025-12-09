@@ -18,7 +18,14 @@ export default function Footer({ siteSettings }: FooterProps) {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Image 
-                src={siteSettings.siteLogo} 
+                src={siteSettings.siteLogo}
+                onError={(e) => {
+                  // Fallback to default logo if image fails to load
+                  const target = e.target as HTMLImageElement
+                  if (target.src !== '/globe.svg') {
+                    target.src = '/globe.svg'
+                  }
+                }} 
                 alt={siteSettings.siteName}
                 width={32}
                 height={32}
