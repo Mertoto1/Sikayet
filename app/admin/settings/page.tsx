@@ -190,40 +190,102 @@ export default function AdminSettingsPage() {
                                             {field.label}
                                             {field.help && <span className="block text-xs text-red-600 mt-1 font-normal">{field.help}</span>}
                                         </label>
-                                        <div className="flex-1 flex flex-col gap-2">
+                                        <div className="flex-1">
                                             <input
                                                 type={field.type || 'text'}
                                                 defaultValue={getVal(field.key)}
                                                 placeholder={field.ph}
-                                                className="input flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                className="input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                                 id={`input-${field.key}`}
                                             />
-                                            <button
-                                                onClick={() => {
-                                                    const inputElement = document.getElementById(`input-${field.key}`) as HTMLInputElement
-                                                    let val: string = inputElement.value
-                                                    // Auto-fix common mistakes
-                                                    if (field.key === 'SMTP_HOST' && val && !val.startsWith('smtp.')) {
-                                                        val = 'smtp.' + val
-                                                        inputElement.value = val
-                                                    }
-                                                    if (field.key === 'SMTP_SECURE' && val === '465') {
-                                                        val = 'true'
-                                                        inputElement.value = val
-                                                    }
-                                                    if (field.key === 'SMTP_SECURE' && val === '587') {
-                                                        val = 'false'
-                                                        inputElement.value = val
-                                                    }
-                                                    handleSave(field.key, val)
-                                                }}
-                                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-                                            >
-                                                Kaydet
-                                            </button>
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                            <div className="mt-6 pt-6 border-t border-gray-200">
+                                <button
+                                    onClick={async () => {
+                                        const smtpFields = [
+                                            'SMTP_HOST',
+                                            'SMTP_PORT',
+                                            'SMTP_SECURE',
+                                            'SMTP_USER',
+                                            'SMTP_PASS',
+                                            'SMTP_FROM'
+                                        ]
+                                        
+                                        let hasError = false
+                                        const values: { [key: string]: string } = {}
+                                        
+                                        // Collect and validate all values
+                                        for (const fieldKey of smtpFields) {
+                                            const inputElement = document.getElementById(`input-${fieldKey}`) as HTMLInputElement
+                                            let val: string = inputElement.value.trim()
+                                            
+                                            // Auto-fix common mistakes
+                                            if (fieldKey === 'SMTP_HOST' && val && !val.startsWith('smtp.')) {
+                                                val = 'smtp.' + val
+                                                inputElement.value = val
+                                            }
+                                            if (fieldKey === 'SMTP_SECURE' && val === '465') {
+                                                val = 'true'
+                                                inputElement.value = val
+                                            }
+                                            if (fieldKey === 'SMTP_SECURE' && val === '587') {
+                                                val = 'false'
+                                                inputElement.value = val
+                                            }
+                                            
+                                            values[fieldKey] = val
+                                            
+                                            // Validate required fields
+                                            if (fieldKey !== 'SMTP_FROM' && !val) {
+                                                alert(`${fieldKey} alanı boş olamaz!`)
+                                                hasError = true
+                                                break
+                                            }
+                                        }
+                                        
+                                        if (hasError) return
+                                        
+                                        // Save all fields
+                                        try {
+                                            for (const fieldKey of smtpFields) {
+                                                await fetch('/api/admin/settings', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                    },
+                                                    body: JSON.stringify({ key: fieldKey, value: values[fieldKey] })
+                                                })
+                                            }
+                                            
+                                            alert('Tüm SMTP ayarları başarıyla kaydedildi!')
+                                            
+                                            // Update local state
+                                            setSettings(prev => {
+                                                const updated = [...prev]
+                                                for (const fieldKey of smtpFields) {
+                                                    const existing = updated.find(s => s.key === fieldKey)
+                                                    if (existing) {
+                                                        existing.value = values[fieldKey]
+                                                    } else {
+                                                        updated.push({ key: fieldKey, value: values[fieldKey] })
+                                                    }
+                                                }
+                                                return updated
+                                            })
+                                            
+                                            router.refresh()
+                                        } catch (err: any) {
+                                            console.error('SMTP settings save error:', err)
+                                            alert(`Hata oluştu: ${err.message || 'Bilinmeyen hata'}`)
+                                        }
+                                    }}
+                                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-medium shadow-sm hover:shadow-md"
+                                >
+                                    Tüm SMTP Ayarlarını Kaydet
+                                </button>
                             </div>
                         </div>
                     </div>
