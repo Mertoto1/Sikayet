@@ -200,19 +200,20 @@ export default function AdminSettingsPage() {
                                             />
                                             <button
                                                 onClick={() => {
-                                                    let val = (document.getElementById(`input-${field.key}`) as HTMLInputElement).value
+                                                    const inputElement = document.getElementById(`input-${field.key}`) as HTMLInputElement
+                                                    let val: string = inputElement.value
                                                     // Auto-fix common mistakes
                                                     if (field.key === 'SMTP_HOST' && val && !val.startsWith('smtp.')) {
-                                                        val = `smtp.${val}`
-                                                        (document.getElementById(`input-${field.key}`) as HTMLInputElement).value = val
+                                                        val = 'smtp.' + val
+                                                        inputElement.value = val
                                                     }
                                                     if (field.key === 'SMTP_SECURE' && val === '465') {
                                                         val = 'true'
-                                                        (document.getElementById(`input-${field.key}`) as HTMLInputElement).value = val
+                                                        inputElement.value = val
                                                     }
                                                     if (field.key === 'SMTP_SECURE' && val === '587') {
                                                         val = 'false'
-                                                        (document.getElementById(`input-${field.key}`) as HTMLInputElement).value = val
+                                                        inputElement.value = val
                                                     }
                                                     handleSave(field.key, val)
                                                 }}
