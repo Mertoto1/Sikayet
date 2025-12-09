@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "node server.js",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && next build",
+    "migrate": "prisma migrate deploy",
     "start": "cross-env NODE_ENV=production node server.js",
     "postinstall": "prisma generate",
     "lint": "eslint",
