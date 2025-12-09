@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                           Int                          @id @default(autoincrement())
+  email                        String                       @unique
+  password                     String
+  name                         String?
+  surname                      String?
+  username                     String?                      @unique
+  phone                        String?
+  role                         String                       @default("USER")
+  avatar                       String?
+  bio                          String?
+  isVerified                   Boolean                      @default(false)
+  resetToken                   String?
+  resetTokenExpiry             DateTime?
+  emailVerified                DateTime?
+  twoFactorEnabled             Boolean                      @default(false)
+  twoFactorSecret              String?
+  companyId                    Int?
+  createdAt                    DateTime                     @default(now())
+  updatedAt                    DateTime                     @updatedAt
+  emailVerificationToken       String?
+  emailVerificationTokenExpiry DateTime?
+  verificationRequests         CompanyVerificationRequest[]
+  complaints                   Complaint[]
+  moderator                    Moderator?
+  reviews                      Review[]
+  supportMessages              SupportMessage[]
+  assignedSupportTickets       SupportTicket[]
+  company                      Company?                     @relation(fields: [companyId], references: [id])
+
+  @@map("User")
+}
+
+model CompanyVerificationRequest {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  companyId Int
+  fullName  String
+  email     String
+  phone     String?
+  title     String?
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  company   Company  @relation(fields: [companyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("CompanyVerificationRequest")
+}
+
+model Company {
+  id                   Int                          @id @default(autoincrement())
+  name                 String
+  slug                 String                       @unique
+  description          String?
+  logoUrl              String?
+  sectorId             Int?
+  isApproved           Boolean                      @default(false)
+  createdAt            DateTime                     @default(now())
+  sector               Sector?                      @relation(fields: [sectorId], references: [id])
+  verificationRequests CompanyVerificationRequest[]
+  complaints           Complaint[]
+  responses            ComplaintResponse[]
+  reviews              Review[]
+  supportTickets       SupportTicket[]
+  users                User[]
+
+  @@map("Company")
+}
+
+model Sector {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  companies Company[]
+
+  @@map("Sector")
+}
+
+model Complaint {
+  id           String              @id @default(cuid())
+  title        String
+  content      String
+  status       String              @default("PENDING_MODERATION")
+  userId       Int
+  companyId    Int
+  moderatorId  Int?
+  publishedAt  DateTime?
+  viewCount    Int                 @default(0)
+  commentCount Int                 @default(0)
+  createdAt    DateTime            @default(now())
+  moderator    Moderator?          @relation(fields: [moderatorId], references: [id])
+  company      Company             @relation(fields: [companyId], references: [id])
+  user         User                @relation(fields: [userId], references: [id])
+  images       ComplaintImage[]
+  responses    ComplaintResponse[]
+
+  @@map("Complaint")
+}
+
+model ComplaintImage {
+  id          Int       @id @default(autoincrement())
+  complaintId String
+  url         String
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+
+  @@map("ComplaintImage")
+}
+
+model ComplaintResponse {
+  id          Int       @id @default(autoincrement())
+  complaintId String
+  companyId   Int
+  message     String
+  createdAt   DateTime  @default(now())
+  company     Company   @relation(fields: [companyId], references: [id])
+  complaint   Complaint @relation(fields: [complaintId], references: [id])
+
+  @@map("ComplaintResponse")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  companyId Int
+  rating    Int
+  message   String?
+  createdAt DateTime @default(now())
+  company   Company  @relation(fields: [companyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, companyId])
+  @@map("Review")
+}
+
+model Moderator {
+  id         Int         @id @default(autoincrement())
+  userId     Int         @unique
+  complaints Complaint[]
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@map("Moderator")
+}
+
+model SystemSetting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("SystemSetting")
+}
+
+model CompanyRequest {
+  id                 Int      @id @default(autoincrement())
+  companyName        String
+  companySector      String
+  companyDescription String?
+  companyLogo        String?
+  fullName           String
+  email              String
+  phone              String?
+  message            String?
+  status             String   @default("PENDING")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("CompanyRequest")
+}
+
+model SupportTicket {
+  id            Int              @id @default(autoincrement())
+  title         String
+  content       String
+  status        String           @default("OPEN")
+  priority      String           @default("MEDIUM")
+  companyId     Int
+  adminId       Int?
+  isReadByAdmin Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  messages      SupportMessage[]
+  admin         User?            @relation(fields: [adminId], references: [id])
+  company       Company          @relation(fields: [companyId], references: [id])
+
+  @@map("SupportTicket")
+}
+
+model SupportMessage {
+  id         Int           @id @default(autoincrement())
+  content    String
+  senderId   Int
+  senderRole String
+  ticketId   Int
+  createdAt  DateTime      @default(now())
+  sender     User          @relation(fields: [senderId], references: [id])
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id])
+
+  @@map("SupportMessage")
+}

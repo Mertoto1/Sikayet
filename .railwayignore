@@ -1,0 +1,11 @@
+# Railway ignore file (similar to .gitignore)
+# Bu dosyalar Railway build'e dahil edilmez
+
+node_modules/
+.next/
+.env.local
+.env.production.local
+*.log
+.DS_Store
+*.db-journal
+
