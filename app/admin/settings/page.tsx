@@ -178,18 +178,19 @@ export default function AdminSettingsPage() {
                         <div className="p-6">
                             <div className="space-y-5">
                                 {[
-                                    { key: 'SMTP_HOST', label: 'SMTP Sunucusu', ph: 'smtp.example.com' },
-                                    { key: 'SMTP_PORT', label: 'SMTP Port', ph: '587' },
-                                    { key: 'SMTP_SECURE', label: 'SMTP Secure (SSL/TLS)', ph: 'false (587 için) veya true (465 için)', type: 'text' },
-                                    { key: 'SMTP_USER', label: 'SMTP Kullanıcı Adı', ph: 'kullanici@example.com' },
+                                    { key: 'SMTP_HOST', label: 'SMTP Sunucusu', ph: 'smtp.brandliftup.nl', help: 'ÖNEMLİ: smtp. ile başlamalı!' },
+                                    { key: 'SMTP_PORT', label: 'SMTP Port', ph: '465 veya 587' },
+                                    { key: 'SMTP_SECURE', label: 'SMTP Secure', ph: 'true (465 için) veya false (587 için)', type: 'text', help: 'Port 465 ise: true, Port 587 ise: false' },
+                                    { key: 'SMTP_USER', label: 'SMTP Kullanıcı Adı', ph: 'info@brandliftup.nl' },
                                     { key: 'SMTP_PASS', label: 'SMTP Şifresi', ph: '********', type: 'password' },
-                                    { key: 'SMTP_FROM', label: 'Gönderen Adresi', ph: 'Destek <destek@example.com>' },
+                                    { key: 'SMTP_FROM', label: 'Gönderen Adresi', ph: 'Şikayetvar Clone <info@brandliftup.nl>' },
                                 ].map(field => (
                                     <div key={field.key} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                         <label className="block text-sm font-medium text-gray-700 min-w-[180px]">
                                             {field.label}
+                                            {field.help && <span className="block text-xs text-red-600 mt-1 font-normal">{field.help}</span>}
                                         </label>
-                                        <div className="flex-1 flex gap-2">
+                                        <div className="flex-1 flex flex-col gap-2">
                                             <input
                                                 type={field.type || 'text'}
                                                 defaultValue={getVal(field.key)}
@@ -199,7 +200,20 @@ export default function AdminSettingsPage() {
                                             />
                                             <button
                                                 onClick={() => {
-                                                    const val = (document.getElementById(`input-${field.key}`) as HTMLInputElement).value
+                                                    let val = (document.getElementById(`input-${field.key}`) as HTMLInputElement).value
+                                                    // Auto-fix common mistakes
+                                                    if (field.key === 'SMTP_HOST' && val && !val.startsWith('smtp.')) {
+                                                        val = `smtp.${val}`
+                                                        (document.getElementById(`input-${field.key}`) as HTMLInputElement).value = val
+                                                    }
+                                                    if (field.key === 'SMTP_SECURE' && val === '465') {
+                                                        val = 'true'
+                                                        (document.getElementById(`input-${field.key}`) as HTMLInputElement).value = val
+                                                    }
+                                                    if (field.key === 'SMTP_SECURE' && val === '587') {
+                                                        val = 'false'
+                                                        (document.getElementById(`input-${field.key}`) as HTMLInputElement).value = val
+                                                    }
                                                     handleSave(field.key, val)
                                                 }}
                                                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
