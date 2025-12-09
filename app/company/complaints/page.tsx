@@ -6,6 +6,9 @@ import { redirect } from 'next/navigation'
 import ComplaintResponseWrapper from '@/components/ComplaintResponseWrapper'
 import ResponseModal from '@/components/ResponseModal'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function CompanyComplaintsPage({ searchParams }: { searchParams: Promise<{ status?: string, page?: string }> }) {
     const session = await getSession()
     if (!isCompany(session)) redirect('/login')

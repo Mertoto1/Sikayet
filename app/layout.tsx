@@ -12,12 +12,20 @@ const inter = Inter({ subsets: ['latin'] })
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const siteSettings = await getSiteSettings()
-  const siteName = siteSettings.siteName
-  
-  return {
-    title: siteName,
-    description: `${siteName} - ${siteSettings.siteDescription}`,
+  try {
+    const siteSettings = await getSiteSettings()
+    const siteName = siteSettings.siteName
+    
+    return {
+      title: siteName,
+      description: `${siteName} - ${siteSettings.siteDescription}`,
+    }
+  } catch (error) {
+    // Fallback if database is not available during build
+    return {
+      title: 'Şikayetvar',
+      description: 'Türkiye\'nin en büyük şikayet platformu',
+    }
   }
 }
 

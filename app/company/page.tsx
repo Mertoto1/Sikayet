@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { logout } from '@/app/actions/auth-actions'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function CompanyDashboardPage() {
     const session = await getSession()
     const role = typeof session === 'object' && session !== null ? session.role : null

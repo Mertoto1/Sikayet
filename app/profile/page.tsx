@@ -5,6 +5,9 @@ import { getSession } from '@/lib/session'
 import { logout } from '@/app/actions/auth-actions'
 import ProfileClient from './ProfileClient'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function ProfilePage() {
   const session = await getSession()
   if (!session) redirect('/login')

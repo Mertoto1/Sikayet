@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function CompaniesPage({ searchParams }: { searchParams: Promise<{ q?: string; sector?: string }> }) {
     const params = await searchParams
     const query = params.q

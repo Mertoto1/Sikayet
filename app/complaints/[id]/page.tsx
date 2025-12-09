@@ -10,6 +10,9 @@ import SidebarViewCount from '@/components/SidebarViewCount'
 const ComplaintDetailClientWrapper = dynamic(() => import('@/components/ComplaintDetailClientWrapper'))
 const ResponseForm = dynamic(() => import('@/components/ResponseForm'))
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const complaint = await prisma.complaint.findUnique({ 

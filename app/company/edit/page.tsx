@@ -5,6 +5,9 @@ import { redirect } from 'next/navigation'
 import { notFound } from 'next/navigation'
 import CompanyEditClient from './CompanyEditClient'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function EditCompanyPage() {
     const session = await getSession()
     if (!isCompany(session)) redirect('/login')
