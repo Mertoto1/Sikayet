@@ -83,21 +83,44 @@ export async function POST(request: Request) {
     await saveVerificationCode(user.id, verificationCode)
 
     // Send verification email
+    console.log(`[REGISTER] ========== START EMAIL SEND ==========`)
+    console.log(`[REGISTER] User ID: ${user.id}, Email: ${email}, Name: ${name}`)
     console.log(`[REGISTER] Attempting to send verification email to ${email} for user ${user.id}`)
-    const emailSent = await sendVerificationEmail(email, verificationCode, name)
     
-    if (emailSent) {
-      console.log(`[REGISTER] Verification email sent successfully for user ${user.id} (${email})`)
-    } else {
-      console.error(`[REGISTER] Failed to send verification email for user ${user.id} (${email})`)
+    let emailSent = false
+    let emailError: any = null
+    
+    try {
+      emailSent = await sendVerificationEmail(email, verificationCode, name)
+      
+      if (emailSent) {
+        console.log(`[REGISTER] ✅ Verification email sent successfully for user ${user.id} (${email})`)
+      } else {
+        console.error(`[REGISTER] ❌ Failed to send verification email for user ${user.id} (${email})`)
+      }
+    } catch (error: any) {
+      emailError = error
+      console.error(`[REGISTER] ❌ Exception while sending email:`, error)
+      console.error(`[REGISTER] Error message: ${error?.message}`)
+      console.error(`[REGISTER] Error code: ${error?.code}`)
+      console.error(`[REGISTER] Error stack: ${error?.stack}`)
     }
+    
+    console.log(`[REGISTER] ========== END EMAIL SEND ==========`)
 
     // Return success but indicate verification is needed
     return NextResponse.json({ 
         success: true, 
         requiresVerification: true,
-        message: 'Doğrulama kodu e-posta adresinize gönderildi',
-        userId: user.id
+        message: emailSent 
+          ? 'Doğrulama kodu e-posta adresinize gönderildi'
+          : 'Kayıt başarılı, ancak e-posta gönderilemedi. Lütfen yönetici ile iletişime geçin.',
+        userId: user.id,
+        emailSent,
+        emailError: emailError ? {
+          message: emailError.message,
+          code: emailError.code
+        } : null
     })
   } catch (error) {
     console.error('Registration error:', error)

@@ -135,7 +135,13 @@ export async function sendEmail(to: string, subject: string, html: string) {
         console.log(`[EMAIL] Email sent successfully! MessageId: ${info.messageId}, Response: ${info.response || 'N/A'}`)
         return { success: true, messageId: info.messageId }
     } catch (error: any) {
-        console.error('Error sending email:', error)
+        console.error(`[EMAIL] ❌ Exception in sendEmail:`, error)
+        console.error(`[EMAIL] Error type: ${error?.constructor?.name}`)
+        console.error(`[EMAIL] Error message: ${error?.message}`)
+        console.error(`[EMAIL] Error code: ${error?.code}`)
+        console.error(`[EMAIL] Error responseCode: ${error?.responseCode}`)
+        console.error(`[EMAIL] Error response: ${error?.response}`)
+        console.error(`[EMAIL] Error stack: ${error?.stack}`)
         
         if (error.code === 'ETIMEDOUT') {
             console.error(`SMTP Connection Timeout: Could not connect to SMTP server at ${error.host || 'unknown host'}. Please check your SMTP settings and network connectivity.`)

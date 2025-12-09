@@ -68,22 +68,34 @@ export async function sendVerificationEmail(email: string, code: string, name: s
       </html>
     `;
 
+    console.log(`[VERIFICATION] Calling sendEmail for ${email}`)
     const result = await sendEmail(
       email,
       `${siteName} - E-posta Doğrulama Kodu`,
       html
     );
 
+    console.log(`[VERIFICATION] sendEmail result:`, JSON.stringify({
+      success: result?.success,
+      reason: result?.reason,
+      error: result?.error,
+      code: result?.code,
+      messageId: result?.messageId
+    }))
+
     // Check if email was sent successfully
     if (result && result.success) {
-      console.log(`Verification email successfully sent to ${email} with messageId: ${result.messageId}`);
+      console.log(`[VERIFICATION] ✅ Verification email successfully sent to ${email} with messageId: ${result.messageId}`);
       return true;
     } else {
-      console.error(`Failed to send verification email to ${email}`, result);
+      console.error(`[VERIFICATION] ❌ Failed to send verification email to ${email}`, result);
       return false;
     }
-  } catch (error) {
-    console.error('Error sending verification email:', error);
+  } catch (error: any) {
+    console.error(`[VERIFICATION] ❌ Exception in sendVerificationEmail:`, error);
+    console.error(`[VERIFICATION] Error message: ${error?.message}`);
+    console.error(`[VERIFICATION] Error code: ${error?.code}`);
+    console.error(`[VERIFICATION] Error stack: ${error?.stack}`);
     return false;
   }
 }
