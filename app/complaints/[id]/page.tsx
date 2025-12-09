@@ -3,12 +3,12 @@ import { getSession } from '@/lib/auth'
 import { isSessionWithRole } from '@/lib/auth-utils'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import ViewCountUpdater from '@/components/ViewCountUpdater'
 import SidebarViewCount from '@/components/SidebarViewCount'
 
-const ComplaintDetailClientWrapper = dynamic(() => import('@/components/ComplaintDetailClientWrapper'))
-const ResponseForm = dynamic(() => import('@/components/ResponseForm'))
+const ComplaintDetailClientWrapper = dynamicImport(() => import('@/components/ComplaintDetailClientWrapper'))
+const ResponseForm = dynamicImport(() => import('@/components/ResponseForm'))
 
 // Force dynamic rendering - don't pre-render at build time
 export const dynamic = 'force-dynamic'
