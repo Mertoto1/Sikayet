@@ -46,6 +46,18 @@ async function handleLogin(request: Request) {
       )
     }
 
+    // Check if email is verified
+    if (!user.isVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Email adresiniz doğrulanmamış. Lütfen e-posta adresinize gönderilen doğrulama kodunu girin.',
+          requiresVerification: true,
+          userId: user.id
+        },
+        { status: 403 }
+      )
+    }
+
     // Check if user has 2FA enabled
     if (user.twoFactorEnabled && user.twoFactorSecret) {
       // Create response first

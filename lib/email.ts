@@ -69,13 +69,18 @@ export async function sendEmail(to: string, subject: string, html: string) {
     // Declare from outside try block so it's accessible in catch
     let from = ''
     
+    console.log(`[EMAIL] sendEmail called - to: ${to}, subject: ${subject}`)
+    
     try {
+        console.log(`[EMAIL] Getting transporter...`)
         const transporter = await getTransporter()
 
         if (!transporter) {
-            console.log('No SMTP Configured (DB/Env). Mock sent:', { to, subject })
+            console.error('[EMAIL] No SMTP Configured (DB/Env). Email cannot be sent:', { to, subject })
             return { success: false, reason: 'No SMTP configuration' }
         }
+        
+        console.log(`[EMAIL] Transporter created successfully`)
 
         // Fetch settings
         const user = await getSMTPSetting('SMTP_USER')
@@ -117,9 +122,8 @@ export async function sendEmail(to: string, subject: string, html: string) {
             from = `"${siteName}" <noreply@example.com>`
         }
         
-        console.log(`From address constructed: ${from}`)
-
-        console.log(`Attempting to send email to ${to} with subject "${subject}" from ${from}`)
+        console.log(`[EMAIL] From address constructed: ${from}`)
+        console.log(`[EMAIL] Attempting to send email to ${to} with subject "${subject}" from ${from}`)
 
         const info = await transporter.sendMail({
             from,
@@ -128,7 +132,7 @@ export async function sendEmail(to: string, subject: string, html: string) {
             html,
         })
         
-        console.log('Email sent successfully: %s', info.messageId)
+        console.log(`[EMAIL] Email sent successfully! MessageId: ${info.messageId}, Response: ${info.response || 'N/A'}`)
         return { success: true, messageId: info.messageId }
     } catch (error: any) {
         console.error('Error sending email:', error)

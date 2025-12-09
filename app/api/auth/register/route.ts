@@ -83,12 +83,13 @@ export async function POST(request: Request) {
     await saveVerificationCode(user.id, verificationCode)
 
     // Send verification email
+    console.log(`[REGISTER] Attempting to send verification email to ${email} for user ${user.id}`)
     const emailSent = await sendVerificationEmail(email, verificationCode, name)
     
     if (emailSent) {
-      console.log(`Verification email sent successfully for user ${user.id} (${email})`)
+      console.log(`[REGISTER] Verification email sent successfully for user ${user.id} (${email})`)
     } else {
-      console.error(`Failed to send verification email for user ${user.id} (${email})`)
+      console.error(`[REGISTER] Failed to send verification email for user ${user.id} (${email})`)
     }
 
     // Return success but indicate verification is needed
