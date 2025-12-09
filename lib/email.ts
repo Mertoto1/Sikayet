@@ -4,8 +4,28 @@ import { getSiteSettings } from './settings'
 
 // Helper function to get SMTP settings
 async function getSMTPSetting(key: string): Promise<string | undefined> {
-    const setting = await prisma.systemSetting.findUnique({ where: { key } })
-    return setting?.value || process.env[key]
+    try {
+        const setting = await prisma.systemSetting.findUnique({ where: { key } })
+        if (setting?.value) {
+            console.log(`[SMTP] Found ${key} in database: ${key === 'SMTP_PASS' ? '***' : setting.value}`)
+            return setting.value
+        }
+        const envValue = process.env[key]
+        if (envValue) {
+            console.log(`[SMTP] Found ${key} in environment: ${key === 'SMTP_PASS' ? '***' : envValue}`)
+            return envValue
+        }
+        console.warn(`[SMTP] ${key} not found in database or environment`)
+        return undefined
+    } catch (error) {
+        console.error(`[SMTP] Error fetching ${key} from database:`, error)
+        const envValue = process.env[key]
+        if (envValue) {
+            console.log(`[SMTP] Using ${key} from environment: ${key === 'SMTP_PASS' ? '***' : envValue}`)
+            return envValue
+        }
+        return undefined
+    }
 }
 
 async function getTransporter() {
@@ -28,7 +48,7 @@ async function getTransporter() {
     const user = await getSMTPSetting('SMTP_USER')
     const pass = await getSMTPSetting('SMTP_PASS')
 
-    console.log(`Creating SMTP transporter with: host=${host}, port=${port}, secure=${secure}, user=${user ? '***' : 'undefined'}`)
+    console.log(`[SMTP] Creating transporter - host=${host}, port=${port}, secure=${secure}, user=${user ? '***' : 'undefined'}, pass=${pass ? '***' : 'undefined'}`)
 
     return nodemailer.createTransport({
         host: host,

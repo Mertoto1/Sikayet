@@ -32,10 +32,19 @@ export default function AdminSettingsPage() {
 
     async function handleSave(key: string, value: string) {
         try {
-            await fetch('/api/admin/settings', {
+            const response = await fetch('/api/admin/settings', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ key, value })
             })
+            
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || 'Kaydetme hatası')
+            }
+            
             alert('Ayarlar kaydedildi')
             
             // Update local state
@@ -49,8 +58,9 @@ export default function AdminSettingsPage() {
             })
             
             router.refresh()
-        } catch (err) {
-            alert('Hata oluştu')
+        } catch (err: any) {
+            console.error('Settings save error:', err)
+            alert(`Hata oluştu: ${err.message || 'Bilinmeyen hata'}`)
         }
     }
 
@@ -170,6 +180,7 @@ export default function AdminSettingsPage() {
                                 {[
                                     { key: 'SMTP_HOST', label: 'SMTP Sunucusu', ph: 'smtp.example.com' },
                                     { key: 'SMTP_PORT', label: 'SMTP Port', ph: '587' },
+                                    { key: 'SMTP_SECURE', label: 'SMTP Secure (SSL/TLS)', ph: 'false (587 için) veya true (465 için)', type: 'text' },
                                     { key: 'SMTP_USER', label: 'SMTP Kullanıcı Adı', ph: 'kullanici@example.com' },
                                     { key: 'SMTP_PASS', label: 'SMTP Şifresi', ph: '********', type: 'password' },
                                     { key: 'SMTP_FROM', label: 'Gönderen Adresi', ph: 'Destek <destek@example.com>' },
