@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState } from 'react'
 
 interface FooterProps {
   siteSettings: {
@@ -11,6 +14,8 @@ interface FooterProps {
 }
 
 export default function Footer({ siteSettings }: FooterProps) {
+  const [logoError, setLogoError] = useState(false)
+  
   return (
     <footer className="bg-gray-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -18,18 +23,13 @@ export default function Footer({ siteSettings }: FooterProps) {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Image 
-                src={siteSettings.siteLogo}
-                onError={(e) => {
-                  // Fallback to default logo if image fails to load
-                  const target = e.target as HTMLImageElement
-                  if (target.src !== '/globe.svg') {
-                    target.src = '/globe.svg'
-                  }
-                }} 
+                src={logoError ? '/globe.svg' : siteSettings.siteLogo}
                 alt={siteSettings.siteName}
                 width={32}
                 height={32}
                 className="h-8 w-auto"
+                onError={() => setLogoError(true)}
+                unoptimized
               />
               <h3 className="text-lg font-semibold">{siteSettings.siteName}</h3>
             </div>
