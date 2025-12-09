@@ -37,6 +37,24 @@ export default function NewComplaintPage() {
     }, [selectedCompany])
 
     useEffect(() => {
+        // Check if user is verified
+        fetch('/api/me')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.user) {
+                    router.push('/login')
+                    return
+                }
+                if (!data.user.isVerified) {
+                    router.push('/verify-email')
+                    return
+                }
+            })
+            .catch(err => {
+                console.error('Failed to check user:', err)
+                router.push('/login')
+            })
+
         // Fetch all companies without limit
         fetch('/api/companies?limit=10000')
             .then(res => res.json())

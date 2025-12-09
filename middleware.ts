@@ -5,7 +5,7 @@ import { jwtVerify } from 'jose'
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret'
 
 // Define protected routes
-const protectedRoutes = ['/admin', '/company']
+const protectedRoutes = ['/admin', '/company', '/profile']
 const adminRoutes = ['/admin']
 const companyRoutes = ['/company']
 
@@ -56,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/company/:path*'],
+  matcher: ['/admin/:path*', '/company/:path*', '/profile/:path*'],
 }
