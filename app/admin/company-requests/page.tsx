@@ -2,6 +2,9 @@ import { prisma } from '@/lib/db'
 import AdminCompanyRequestsClient from '@/components/AdminCompanyRequestsClient'
 import { redirect } from 'next/navigation'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function CompanyRequestsPage() {
     // Check if user is admin
     // Note: In a real implementation, you would check session here

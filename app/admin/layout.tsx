@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import AdminSidebar from './components/AdminSidebar'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function AdminLayout({
   children,
 }: {

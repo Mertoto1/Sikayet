@@ -8,6 +8,9 @@ import { getSiteSettings } from '@/lib/settings'
 
 const inter = Inter({ subsets: ['latin'] })
 
+// Force dynamic rendering for metadata generation
+export const dynamic = 'force-dynamic'
+
 export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getSiteSettings()
   const siteName = siteSettings.siteName

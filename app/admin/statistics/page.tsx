@@ -14,6 +14,9 @@ function getDateRanges() {
   return { today, weekAgo, monthAgo, yearAgo }
 }
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
+
 export default async function AdminStatisticsPage() {
   const { today, weekAgo, monthAgo, yearAgo } = getDateRanges()
 
