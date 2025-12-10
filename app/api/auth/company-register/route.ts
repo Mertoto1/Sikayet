@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import bcrypt from 'bcrypt'
 import { z } from 'zod'
 import { generateVerificationCode, sendVerificationEmail, saveVerificationCode } from '@/lib/verification'
+import { isEmailVerificationEnabled } from '@/lib/settings'
 
 const companyRegisterSchema = z.object({
     fullName: z.string().min(2, 'Ad Soyad en az 2 karakter olmalıdır'),
@@ -91,23 +92,43 @@ export async function POST(request: Request) {
             }
         })
 
-        // Generate and save verification code
-        const verificationCode = generateVerificationCode()
-        await saveVerificationCode(user.id, verificationCode)
-
-        // Send verification email
-        const emailSent = await sendVerificationEmail(data.email, verificationCode, data.fullName)
+        // Check if email verification is enabled
+        const emailVerificationEnabled = await isEmailVerificationEnabled()
         
-        if (emailSent) {
-          console.log(`Verification email sent successfully for company user ${user.id} (${data.email})`)
+        let requiresVerification = false
+
+        if (emailVerificationEnabled) {
+            // Generate and save verification code
+            const verificationCode = generateVerificationCode()
+            await saveVerificationCode(user.id, verificationCode)
+
+            // Send verification email
+            const emailSent = await sendVerificationEmail(data.email, verificationCode, data.fullName)
+            
+            if (emailSent) {
+                console.log(`Verification email sent successfully for company user ${user.id} (${data.email})`)
+            } else {
+                console.error(`Failed to send verification email for company user ${user.id} (${data.email})`)
+            }
+            requiresVerification = true
         } else {
-          console.error(`Failed to send verification email for company user ${user.id} (${data.email})`)
+            // Email verification disabled - mark user as verified (email verified, but still pending company approval)
+            console.log(`[COMPANY-REGISTER] Email verification is disabled - marking user ${user.id} email as verified`)
+            await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    emailVerified: new Date()
+                    // Note: isVerified is not set to true because company users still need admin approval
+                }
+            })
         }
 
         return NextResponse.json({ 
             success: true, 
-            requiresVerification: true,
-            message: 'Doğrulama kodu e-posta adresinize gönderildi',
+            requiresVerification,
+            message: requiresVerification 
+                ? 'Doğrulama kodu e-posta adresinize gönderildi'
+                : 'Kayıt başarılı! Hesabınız admin onayı bekliyor.',
             userId: user.id
         })
     } catch (error: any) {

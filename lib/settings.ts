@@ -32,3 +32,9 @@ export async function getSiteSettings() {
     siteDescription: settings.site_description || 'Türkiye\'nin en büyük şikayet platformu'
   }
 }
+
+// Check if email verification is enabled (default: false/disabled)
+export async function isEmailVerificationEnabled(): Promise<boolean> {
+  const settings = await getSystemSettings()
+  return settings.EMAIL_VERIFICATION_ENABLED === 'true'
+}

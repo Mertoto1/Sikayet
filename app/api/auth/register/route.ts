@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 import { generateVerificationCode, saveVerificationCode, sendVerificationEmail } from '@/lib/verification'
+import { isEmailVerificationEnabled } from '@/lib/settings'
 
 export async function POST(request: Request) {
   try {
@@ -78,43 +79,62 @@ export async function POST(request: Request) {
       }
     })
 
-    // Generate and save verification code
-    const verificationCode = generateVerificationCode()
-    await saveVerificationCode(user.id, verificationCode)
-
-    // Send verification email
-    console.log(`[REGISTER] ========== START EMAIL SEND ==========`)
-    console.log(`[REGISTER] User ID: ${user.id}, Email: ${email}, Name: ${name}`)
-    console.log(`[REGISTER] Attempting to send verification email to ${email} for user ${user.id}`)
+    // Check if email verification is enabled
+    const emailVerificationEnabled = await isEmailVerificationEnabled()
     
     let emailSent = false
     let emailError: any = null
-    
-    try {
-      emailSent = await sendVerificationEmail(email, verificationCode, name)
-      
-      if (emailSent) {
-        console.log(`[REGISTER] ✅ Verification email sent successfully for user ${user.id} (${email})`)
-      } else {
-        console.error(`[REGISTER] ❌ Failed to send verification email for user ${user.id} (${email})`)
-      }
-    } catch (error: any) {
-      emailError = error
-      console.error(`[REGISTER] ❌ Exception while sending email:`, error)
-      console.error(`[REGISTER] Error message: ${error?.message}`)
-      console.error(`[REGISTER] Error code: ${error?.code}`)
-      console.error(`[REGISTER] Error stack: ${error?.stack}`)
-    }
-    
-    console.log(`[REGISTER] ========== END EMAIL SEND ==========`)
+    let requiresVerification = false
 
-    // Return success but indicate verification is needed
+    if (emailVerificationEnabled) {
+      // Generate and save verification code
+      const verificationCode = generateVerificationCode()
+      await saveVerificationCode(user.id, verificationCode)
+
+      // Send verification email
+      console.log(`[REGISTER] ========== START EMAIL SEND ==========`)
+      console.log(`[REGISTER] User ID: ${user.id}, Email: ${email}, Name: ${name}`)
+      console.log(`[REGISTER] Attempting to send verification email to ${email} for user ${user.id}`)
+      
+      try {
+        emailSent = await sendVerificationEmail(email, verificationCode, name)
+        
+        if (emailSent) {
+          console.log(`[REGISTER] ✅ Verification email sent successfully for user ${user.id} (${email})`)
+        } else {
+          console.error(`[REGISTER] ❌ Failed to send verification email for user ${user.id} (${email})`)
+        }
+      } catch (error: any) {
+        emailError = error
+        console.error(`[REGISTER] ❌ Exception while sending email:`, error)
+        console.error(`[REGISTER] Error message: ${error?.message}`)
+        console.error(`[REGISTER] Error code: ${error?.code}`)
+        console.error(`[REGISTER] Error stack: ${error?.stack}`)
+      }
+      
+      console.log(`[REGISTER] ========== END EMAIL SEND ==========`)
+      requiresVerification = true
+    } else {
+      // Email verification disabled - mark user as verified directly
+      console.log(`[REGISTER] Email verification is disabled - marking user ${user.id} as verified`)
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          isVerified: true,
+          emailVerified: new Date()
+        }
+      })
+    }
+
+    // Return success
     return NextResponse.json({ 
         success: true, 
-        requiresVerification: true,
-        message: emailSent 
-          ? 'Doğrulama kodu e-posta adresinize gönderildi'
-          : 'Kayıt başarılı, ancak e-posta gönderilemedi. Lütfen yönetici ile iletişime geçin.',
+        requiresVerification,
+        message: requiresVerification 
+          ? (emailSent 
+              ? 'Doğrulama kodu e-posta adresinize gönderildi'
+              : 'Kayıt başarılı, ancak e-posta gönderilemedi. Lütfen yönetici ile iletişime geçin.')
+          : 'Kayıt başarılı! Giriş yapabilirsiniz.',
         userId: user.id,
         emailSent,
         emailError: emailError ? {
